@@ -1,0 +1,16 @@
+    register the auctioneer who gives M and q
+
+    registering notaries every notary calls reg_notary function
+    
+    registering bidders (< notaries) every notary calls reg_notary function
+
+    start_auction function will be called by auctioneer from the test case {time}
+        function for mapping notaries to bidders and send them the values that are input by respective bidders
+    
+    auctioneer asks who is the winner through the function winners_who 
+        announces it on the network
+
+    get payment from the bidders    
+
+
+

@@ -1,0 +1,31 @@
+    main code                   test case
+                                
+                                * choose M list of all items
+                                
+                                * 
+
+
+* register notaries             * check if correctly registered
+
+* register bidders              * check if correctly registered
+
+                                * one-one allocation of a notary to the bidder.{if notary registration > bidder then randomly select n notaries}                 
+
+                                * bidder's interest in items which is basically a set {}
+                                https://stackoverflow.com/questions/18035595/powersets-in-python-using-itertools
+                                i.e to generate the powerset of M "PM" and set PM(rand(i)) to ith bidder {free to modify}
+
+* pass values given by          * check if this happens correctly
+the bidders to assigned
+notaries
+
+* notaries exchange values      * check if this happens correctly
+with each other after auc-
+-tioneer says to do so
+
+* check winner                  * check if this is fine :P (xD a lot of hard work)
+    * asks ni nj for each value
+    * sort usnig merge sort  
+    * ask notaries for sets Si's
+    * check fill winner's array 
+    * diclare winners.
