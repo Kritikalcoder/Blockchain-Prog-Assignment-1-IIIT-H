@@ -186,5 +186,100 @@ contract Auction{
         }
     }
 
+    function biddersLength () public view returns (uint) {
+        return bidderAddresses.length;
+    }
+    // uint[] retArray1;
+    //  assigning bidders to the notaries 
+    function assignBidder(address notaryAddress) public returns (uint[]){
+        //  simple i to i mapping
+        // delete retArray1;
+        uint ind;
+        ind = notaryStructs[notaryAddress].index;
+        notaryStructs[notaryAddress].bidderIndex = ind;
+        notaryStructs[notaryAddress].retArray = bids[bidderAddresses[ind]].preferredItems;
+        notaryStructs[notaryAddress].retArray.push(bids[bidderAddresses[ind]].valuation[0]);
+        notaryStructs[notaryAddress].retArray.push(bids[bidderAddresses[ind]].valuation[1]);
+        notaryStructs[notaryAddress].retArray.push(ind);
+        return notaryStructs[notaryAddress].retArray;
+    }
+
+    function viewMapping(address notaryAddress) public view returns (uint[]) {
+        return notaryStructs[notaryAddress].retArray;
+    }
+    
+   //  Auctioneer will now send the precomputed values which they got by contacting offline with eachother
+    uint sendVal = 0;
+    uint[10][10] mainValues; //  considering there can be max 100 bidders
+    function sendValues(uint[10][10] vals) public onlyBy(auctioneerAddress) returns (bool){
+        uint i;
+        uint j;
+        if(sendVal == 0){
+            for(i = 0; i < bidderAddresses.length; i++){
+                for(j = 0; j < bidderAddresses.length; j++){
+                    mainValues[i][j] = vals[i][j];
+                }
+            }
+            sendVal = 1;
+        }
+        return true;
+    }
+    function verifyValues() public returns (bool) {
+        if(sendVal == 1){
+            return true;
+        }
+        else{
+            return false;
+        }    
+    }
+
+    address[] winnerAddresses;
+    address[] bidder_Addresses;
+    function whoIsTheWinner(uint[10][10] vals) public onlyBy(auctioneerAddress) returns (address[]){
+        
+        // sort(bidderAddresses);
+        Sorter sorter = new Sorter();
+        sorter.set(mainValues, bidderAddresses);
+        
+        // calling sort function from Sorter contract
+        bidder_Addresses = sorter.sort();
+
+        uint len = bidder_Addresses.length;
+        uint i;
+        uint j;
+        for (i = 0; i < len / 2; i++) {
+            j = len - 1 - i;
+            (bidder_Addresses[i], bidder_Addresses[j]) = (bidder_Addresses[j], bidder_Addresses[i]);
+        }
+        
+        uint[] set_union;
+        // set_union.push(0);        
+        for (i = 0; i < len; i++){
+            uint idx = bidderStructs[bidder_Addresses[i]].index;
+            if (set_union.length == 0) {
+                winnerAddresses.push(bidder_Addresses[i]);
+                set_union.push(idx);
+            }
+            
+            else {
+                uint flag = 1;
+                uint k;
+                
+                for (k = 0; k < set_union.length; k++){
+                    if (vals[set_union[k]][idx] == 1){
+                        flag = 0;
+                        break;
+                    }
+                }
+                
+                if (flag == 1){
+                    winnerAddresses.push(bidder_Addresses[i]);
+                    set_union.push(idx);
+                }
+            }
+        }
+        return winnerAddresses;
+    }
+
     
 }

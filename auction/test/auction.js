@@ -76,6 +76,7 @@ contract("Auction", async(accounts) => {
     let q = 31;
     let M = [1, 2];
     let u = 5;  
+    
     it("tests that auctioneer is registered", async () => {
         auction = await Auction.new({from: accounts[0]});
         await auction.sendParams(q, M);
@@ -90,5 +91,46 @@ contract("Auction", async(accounts) => {
         assert.equal(res1, 1, "notary isn't registered");
 
     });
+
+    it("tests that notary 1 can't register again", async () => {
+        await auction.registerNotaries(accounts[1]);
+        let res1 = await auction.notariesLength();
+        assert.equal(res1, 1, "notary isn't registered");
+
+    });
+
+    it("tests that notary 2 is registered", async () => {
+        await auction.registerNotaries(accounts[2]);
+        let res1 = await auction.notariesLength();
+        assert.equal(res1, 2, "notary isn't registered");
+
+    });
+
+    it("tests that bidder 1 is registered", async () => {
+        await auction.registerBidders(accounts[3], [u, calcv(1, u, q)], [u, calcv(10, u, q)]);
+        let res1 = await auction.biddersLength();
+        assert.equal(res1, 1, "notary isn't registered");
+
+    });
+    var i = 0;
+    for(i=0;i<3;i++){
+    it("tests that bidder 1 can't register again", async () => {
+        await auction.registerBidders(accounts[3], [u, calcv(1, u, q)], [u, calcv(10, u, q)]);
+        let res1 = await auction.biddersLength();
+        assert.equal(res1, 1, "notary isn't registered");
+
+    });}
+
+    it("tests that bidder 2 is registered", async () => {
+        await auction.registerBidders(accounts[4], [u, calcv(2, u, q)], [u, calcv(5, u, q)]);
+        let res1 = await auction.biddersLength();
+        assert.equal(res1, 2, "notary isn't registered");
+
+    });
+
+    var bidder_items = [];
+    var bidder_vals = [];
+    var bidder_inds = [];
+
 
 }
