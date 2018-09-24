@@ -43,4 +43,52 @@ function intersectionMatrix(vals){
         }
     }
     return int_matrix;
+
+    unction compMatrix(vals){
+    var n_notaries = vals.length;
+    var defaultValue = 0;
+    var comp_matrix  = Array(10).fill(null).map(_ => Array(10).fill(defaultValue));
+    var i, j;
+    for (i = 0; i < n_notaries; i++){
+        for (j = i; j < n_notaries; j++){
+            if(i == j) {
+                comp_matrix[i][j] = 0;
+                continue;
+            }
+            var val = comparison(vals[i]['u'], vals[i]['v'], vals[j]['u'], vals[j]['v'], 31);
+            comp_matrix[i][j] = val;
+            if (val == 0)
+                comp_matrix[j][i] = val;
+            else if(val == 1)
+                comp_matrix[j][i] = 2;
+            else 
+                comp_matrix[j][i] = 1;
+            
+        }
+    }
+    return comp_matrix;
+}
+
+const Auction = artifacts.require("Auction");
+contract("Auction", async(accounts) => {
+
+    var auction;
+    let q = 31;
+    let M = [1, 2];
+    let u = 5;  
+    it("tests that auctioneer is registered", async () => {
+        auction = await Auction.new({from: accounts[0]});
+        await auction.sendParams(q, M);
+        let res = await auction.auctioneerExists();
+        assert.equal(res, accounts[0], "auctioneer isn't registered");
+
+    });
+
+    it("tests that notary 1 is registered", async () => {
+        await auction.registerNotaries(accounts[1]);
+        let res1 = await auction.notariesLength();
+        assert.equal(res1, 1, "notary isn't registered");
+
+    });
+
 }

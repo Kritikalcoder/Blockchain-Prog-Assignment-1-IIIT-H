@@ -85,6 +85,106 @@ contract Auction{
         _;
     }
 
+    constructor() public {
+        auctioneerAddress = msg.sender;
+        // q = _q;
+        // M = _M;
+        auctioneerRegistered = true;
+    }
+    function sendParams(uint _q, uint[] _M) public onlyBy(auctioneerAddress) returns (bool) {
+        q = _q;
+        M = _M;
+        return true;
+    }    
+    
+    // Parameters of auction
+    uint public numNotaries = 0;
+    uint public numBidders = 0;
+    
+    function auctioneerExists () public view returns (address) {
+        return auctioneerAddress;
+    }
+    
+    //  Notary registration work
+    struct notaryStruct {
+        uint index;
+        uint bidderIndex;
+        uint[] retArray;
+    }
+    
+    mapping(address => notaryStruct) public notaryStructs;
+    address[] public notaryAddresses;
+    event LogNewNotary (address indexed notaryAddress, uint index, uint bidderIndex);
+    
+    //  checking whether the notary is already registered or not
+    function isNotary(address notaryAddress) public constant returns(bool) {
+        if(notaryAddresses.length == 0) return false;
+        return (notaryAddresses[notaryStructs[notaryAddress].index] == notaryAddress);
+    }
+    
+    //  registering notaries
+    function registerNotaries(address notaryAddress) public returns (bool){
+        if(isNotary(notaryAddress) == false){
+            notaryAddresses.push(notaryAddress);
+            notaryStructs[notaryAddress].index = notaryAddresses.length - 1;
+            notaryStructs[notaryAddress].bidderIndex = 0;
+            emit LogNewNotary(notaryAddress, notaryAddresses.length, notaryStructs[notaryAddress].bidderIndex);
+            return true;
+        } 
+        else{
+            return false;
+        }
+        
+    }
+
+    function notariesLength () public view returns (uint) {
+        return notaryAddresses.length;
+    }
+    
+    // Structure for a bid where (u, v) are
+    // the random representation of the ith item
+    // such that x = (u+v)modq
+    // And, where valuation_u, valuation_v are the 
+    // random representation of valuation wi
+    struct Bid {
+        uint[] preferredItems;
+        uint[] valuation;
+    }
+    
+    struct bidderStruct {
+        uint index;
+    }
+    
+    mapping(address => bidderStruct) private bidderStructs;
+    
+    address[] public bidderAddresses;
+    mapping(address => Bid) private bids;
+    
+    //  registering bidders
+    event LogNewBidder   (address indexed bidderAddress, uint index);
+    
+    //  checking whether the bidder is already registered or not
+    function isBidder(address bidderAddress) public constant returns(bool) {
+        if(bidderAddresses.length == 0) return false;
+        return (bidderAddresses[bidderStructs[bidderAddress].index] == bidderAddress);
+    }
+    
+    //  registering bidders
+    function registerBidders(address bidderAddress, uint[] preferredItems, uint[2] valuation) public returns (bool){
+        if(isBidder(bidderAddress) == false){
+            bidderStructs[bidderAddress].index = bidderAddresses.push(bidderAddress) - 1;
+            bids[bidderAddress].preferredItems = preferredItems;
+            bids[bidderAddress].valuation = valuation;
+            
+            emit LogNewBidder(
+                bidderAddress, 
+                bidderStructs[bidderAddress].index);
+            return true;
+        } 
+        else{
+            return false;
+        }
+    }
 
     
 }
