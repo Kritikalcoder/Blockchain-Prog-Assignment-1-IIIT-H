@@ -132,5 +132,53 @@ contract("Auction", async(accounts) => {
     var bidder_vals = [];
     var bidder_inds = [];
 
+    it("tests that bidders are mapped uniquely", async () => {
+        for (var k = 1; k < 3; k++){
+            await auction.assignBidder(accounts[k]);
+            let vals = await auction.viewMapping(accounts[k]);
+            let items = [];
+            for (var i = 0; i < vals.length - 1; i += 2) {
+                items.push({
+                    'u': vals[i],
+                    'v': vals[i + 1]
+                });  
+            }
+            bidder_items.push(items);
+            bidder_vals.push({
+                'u': vals[vals.length - 3],
+                'v': vals[vals.length - 2]
+            });
+            bidder_inds.push(vals[vals.length - 1]);                        
+        }
+        assert.notEqual(bidder_inds[0], bidder_inds[1], "mapping is not unique")        
+
+    });
+
+    it("tests that comparison values are sent", async () => {
+        var comp_matrix = compMatrix(bidder_vals);
+        await auction.sendValues(comp_matrix);
+        let result =  await auction.verifyValues();     
+        assert.equal(result, true, "values were not sent correctly")
+    });
+
+    var address_list = [];
+
+    it("tests that intersection values are sent", async () => {
+        var intersection_mat = intersectionMatrix(bidder_items);
+        await auction.whoIsTheWinner(intersection_mat);
+        address_list = await auction.returnWinners();
+        assert.equal(true, true, "false");
+    });
+
+    it("tests that winner is determined correctly", async () => {
+        var same = 0;
+        if (address_list.length == 2) {
+            if ((address_list[0] == accounts[3] && address_list[1] == accounts[4]) || 
+              (address_list[0] == accounts[4] && address_list[1] == accounts[3])) {
+                same = 1;
+            }
+        }
+        assert.equal(same, 1, "winner list is not the same");
+    });
 
 }

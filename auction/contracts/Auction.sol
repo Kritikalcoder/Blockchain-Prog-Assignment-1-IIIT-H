@@ -281,5 +281,86 @@ contract Auction{
         return winnerAddresses;
     }
 
+    function returnWinners() public view returns (address[]) {
+        return winnerAddresses;
+    }
+    ///////////////////////////
+    mapping(address => uint) paymentsWinners;
+        
+    function sqrt(uint x) returns (uint y) {
+        uint z = (x + 1) / 2;
+        y = x;
+        while (z < y) {
+            y = z;
+            z = (x / z + z) / 2;
+        }
+        return y;
+    }
+    
+    function payments(uint[10][10] vals) public returns (uint[]){
+        uint len = winnerAddresses.length;
+        uint i;
+        uint j;
+        
+        for (i = 0; i < len; i++){
+            uint idx_i = bidderStructs[winnerAddresses[i]].index;
+            uint size = sqrt((bids[winnerAddresses[i]].preferredItems.length)/2);
+            
+            uint flag = 1;
+            for (j = 0; j < bidder_Addresses.length; j++){
+                uint idx_j = bidderStructs[bidder_Addresses[j]].index;
+                if (idx_i != idx_j && vals[idx_i][idx_j] == 1){
+                    flag = 0;
+                    break;
+                }
+            }
+            
+            if (flag == 1) {
+                paymentsWinners[winnerAddresses[i]] = 0;
+            }
+            else{
+                // paymentsWinners[i]
+                uint val = (bids[bidder_Addresses[j]].valuation[0] + bids[bidder_Addresses[j]].valuation[0])%q;
+                uint tp1 = (val/size) * ((1e18));
+                uint tp2 = (val%size) * ((1e18)/size);
+                
+                paymentsWinners[winnerAddresses[i]] = tp1 + tp2;
+            }
+        }
+    }
+    
+    event logPaymentDone (address indexed Address, uint amount);
+    
+    function payForItems() public payable returns(bool){
+        
+        if (msg.value == paymentsWinners[msg.sender]){
+            emit logPaymentDone(msg.sender, msg.value);
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    
+    //  making payment to notaries
+    uint x;
+    mapping(address => notaryStruct) public alreadyPaid;
+    //  checking whether the notary is already registered or not
+    function isAlreadyPaid(address notaryAddress) public constant returns(bool) {
+        if(x == 0) return false;
+        return (notaryAddresses[alreadyPaid[notaryAddress].index] == notaryAddress);
+    }
+    // function makePaymentToAuctioneer(address bidderAddresses)
+    function makePaymentToNotaries(address notaryAddress) payable onlyBy(auctioneerAddress) returns(bool){
+        if(isAlreadyPaid(notaryAddress) == false){
+            x++;
+            alreadyPaid[notaryAddress].index = notaryStructs[notaryAddress].index;
+            return notaryAddress.send(msg.value);
+        }
+        else{
+            return false;
+        }
+    }
+
     
 }
